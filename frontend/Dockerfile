@@ -1,8 +1,12 @@
 # build env
-FROM node:13.12.0-alpine as build
+ARG VERSION=13.12.0-alpine
+
+FROM node:$VERSION as builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY . ./
+COPY . .
 RUN npm run build
-CMD cp -r build result_build
+CMD cp -r build/. /static
+
+#  copy . . сразу

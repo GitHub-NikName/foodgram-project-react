@@ -1,17 +1,84 @@
-version: '3.3'
+version: '3'
 services:
+  db:
+    image: postgres:15.3-alpine3.18
+    container_name: db
+    env_file: .env
+    restart: always
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 30s
+      timeout: 3s
+      retries: 3
+#      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+  backend:
+    build: ../backend/
+    container_name: foodgram_backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+       - ../backend:/app
+       - static:/static
+       - media:/media
+    depends_on:
+      - db
+    restart: always
+    environment:
+      PYCHARM_DEBUG: True
+
+#  develop:
+#    build: ../backend/
+#    container_name: foodgram_backend_dev
+#    env_file: .env
+#    volumes:
+#       - ../backend:/app
+##      - static:/app/static
+##      - media:/app/media
+#    ports:
+#      - '8000:8000'
+#    depends_on:
+#      - db
+#      - backend
+#    restart: always
+#    stdin_open: true
+#    tty: true
+#    environment:
+#      # PYCHARM_HOSTED: "1"
+#      # PYCHARM_DISPLAY_PORT: "63342"
+#      PYCHARM_DEBUG: True
 
   frontend:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+    container_name: foodgram_frontend
     volumes:
-      - ../frontend/:/app/result_build/
+      - static:/static
+
   nginx:
-    image: nginx:1.19.3
+    image: nginx:1.24-alpine3.17
+    container_name: foodgram_nginx
+    depends_on:
+      - backend
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
+#      - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/usr/share/nginx/html/
+
+volumes:
+  pg_data:
+  static:
+  media:
