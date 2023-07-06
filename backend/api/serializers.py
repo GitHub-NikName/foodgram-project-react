@@ -1,25 +1,27 @@
-import django.db.models
-from rest_framework import serializers
-from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
-# from rest_framework.validators import ValidationError
-from django.db import IntegrityError, transaction
-from django.core.files.base import ContentFile
-import base64
-from django.shortcuts import get_object_or_404
 from collections import OrderedDict
-from rest_framework.validators import UniqueTogetherValidator
-
-from .utils import create_list_obj, empty_validator, \
-    DynamicUniqueTogetherValidator
-
+from rest_framework import serializers
+from django.db import transaction
+from django.contrib.auth import get_user_model
 from drf_base64.fields import Base64ImageField
-
-from recipes.models import Recipe, Subscriptions
-from recipes.models import Tag, Ingredient, IngredientInRecipe, FavoriteRecipe, ShoppingCart
-
 from djoser.serializers import UserCreateSerializer
+
+from recipes.models import (
+    Recipe,
+    Subscriptions
+)
+from recipes.models import (
+    Tag,
+    Ingredient,
+    IngredientInRecipe,
+    FavoriteRecipe,
+    ShoppingCart
+)
+from .utils import (
+    create_list_obj,
+    empty_validator,
+    DynamicUniqueTogetherValidator
+)
+
 
 User = get_user_model()
 

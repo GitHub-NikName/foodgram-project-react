@@ -1,44 +1,62 @@
-from rest_framework import viewsets, mixins, status
-from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.generics import GenericAPIView
-from rest_framework.viewsets import ViewSet, ModelViewSet, GenericViewSet
-from rest_framework.decorators import api_view, action, permission_classes
-from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny
-from rest_framework.serializers import Serializer
-from django.shortcuts import get_object_or_404
-from django.db.models import Exists, Q, Count, F, Subquery, OuterRef, Avg, Prefetch
-from django.db import IntegrityError, transaction
-from rest_framework.exceptions import ValidationError
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from djoser.serializers import SetPasswordSerializer
+from uuid import uuid4
 
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from django.db.models import (
+    Exists,
+    Count,
+    F,
+    Subquery,
+    OuterRef,
+    Prefetch,
+    Sum
+)
+from rest_framework import (
+    viewsets,
+    mixins,
+    status
+)
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from djoser.serializers import SetPasswordSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+
+from recipes.models import (
+    Tag,
+    Recipe,
+    Ingredient,
+    ShoppingCart,
+    Subscriptions,
+    FavoriteRecipe,
+    IngredientInRecipe
+)
+from .serializers import (
+    UserSerializer,
+    SubscriptionsSerializer,
+    ShoppingCartSerializer,
+    FavoriteSerializer,
+    TagSerializer,
+    RecipeReadSerializer,
+    RecipeWriteSerializer,
+    RecipeShortSerializer,
+    IngredientSerializer,
+    SubscribeSerialization
+)
+from .filters import RecipeFilter, IngredientFilter
+from .permissions import IsAuthenticatedOrOwnerOrReadOnly
+from .utils import create_pdf
+
 
 User = get_user_model()
 
 
-from recipes.models import Recipe, Tag, Ingredient, IngredientInRecipe, ShoppingCart
-from recipes.models import FavoriteRecipe, Subscriptions
-
-
-from .serializers import UserSerializer, SubscriptionsSerializer, \
-    ShoppingCartSerializer, FavoriteSerializer
-# from .serializers import UserWriteSerializer
-from .serializers import TagSerializer
-from .serializers import RecipeReadSerializer
-from .serializers import RecipeWriteSerializer
-from .serializers import RecipeShortSerializer
-from .serializers import IngredientSerializer
-from .serializers import SubscribeSerialization
-from .filters import RecipeFilter, IngredientFilter
-from .permissions import IsAdminOrReadOnly, IsAuthenticatedOwnerAdminOrReadOnly
-
-
 class CreateListRetrieveViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                                mixins.RetrieveModelMixin, GenericViewSet):
+                                mixins.RetrieveModelMixin,
+                                viewsets.GenericViewSet):
     pass
 
 
@@ -56,16 +74,8 @@ class UserViewSet(CreateListRetrieveViewSet):
                     user=self.request.user.id,
                     author=OuterRef("pk")
                 )
-                # self.request.user.follower.filter(author=OuterRef("pk"))
             )
         ))
-
-
-        # queryset = super().get_queryset().annotate(is_subscribed=Exists(
-        #     Subquery(
-        #         self.request.user.follower.filter(author=OuterRef("pk"))
-        #     )
-        # ))
 
         if self.action in ('subscriptions', 'subscribe'):
             return queryset.annotate(
@@ -134,28 +144,22 @@ class UserViewSet(CreateListRetrieveViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class RecipeViewSet(ModelViewSet):
+class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeReadSerializer
-    permission_classes = [IsAuthenticatedOwnerAdminOrReadOnly]
+    permission_classes = [IsAuthenticatedOrOwnerOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def get_queryset(self):
-        if self.action in ('shopping_cart', 'download_shopping_cart'):
+        if self.action == 'download_shopping_cart':
+            return IngredientInRecipe.objects.filter(
+                recipe__shoppingcart__user=self.request.user
+            )
+        if self.action == 'shopping_cart':
             return ShoppingCart.objects.filter(user=self.request.user)
         if self.action == 'favorite':
             return FavoriteRecipe.objects.filter(user=self.request.user)
-        # if not self.request.user.is_authenticated:
-        #     return super().get_queryset()
-
-        # prefetch = Prefetch(
-        #     'author', queryset=User.objects.annotate(
-        #         is_subscribed=Exists(Subquery(
-        #             self.request.user.follower.filter(author=OuterRef("pk"))
-        #         ))
-        #     )
-        # )
 
         filter_user_recipe = {
             'user': self.request.user.id,
@@ -163,14 +167,12 @@ class RecipeViewSet(ModelViewSet):
         }
 
         prefetch = Prefetch(
-            'author', queryset=User.objects.annotate(
-                is_subscribed=Exists(Subquery(
-                    Subscriptions.objects.filter(
-                        user=self.request.user.id,
-                        author=OuterRef("pk")
-                    )
-                ))
-            )
+            'author',
+            queryset=User.objects.annotate(is_subscribed=Exists(Subquery(
+                Subscriptions.objects.filter(
+                    user=self.request.user.id, author=OuterRef("pk")
+                )
+            )))
         )
 
         queryset = super().get_queryset().annotate(
@@ -182,22 +184,6 @@ class RecipeViewSet(ModelViewSet):
             )
         ).prefetch_related(prefetch, 'ingredients', 'tags')
         return queryset
-
-
-
-        # queryset = super().get_queryset().annotate(
-        #     is_favorited=Exists(
-        #         Subquery(self.request.user.favoriterecipe_set.filter(
-        #             recipe=OuterRef('pk')
-        #         ))
-        #     ),
-        #     is_in_shopping_cart=Exists(
-        #         Subquery(self.request.user.shoppingcart_set.filter(
-        #             recipe=OuterRef('pk')
-        #         ))
-        #     )
-        # ).prefetch_related(prefetch, 'ingredients', 'tags')
-        # return queryset
 
     def get_serializer_class(self):
         serializers = {
@@ -211,24 +197,27 @@ class RecipeViewSet(ModelViewSet):
         return serializers.get(self.action, super().get_serializer_class())
 
     def get_permissions(self):
-        permissions = {
-            'download_shopping_cart': [IsAuthenticated]
-        }
-        self.permission_classes = permissions.get(self.action,
-                                                  self.permission_classes)
+        if self.action == 'download_shopping_cart':
+            self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=False) #, url_path='download_shopping_cart'
+    @action(detail=False)
     def download_shopping_cart(self, request):
-        qs = Recipe.objects.filter(
-            id__in=self.get_queryset().values_list('recipe__id', flat=True)
-        )
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
-    #  TODO доделать
+        queryset = self.get_queryset()
+        recipes = queryset.values('recipe__name').distinct()
+        ingredients = queryset.values(
+            'ingredient__name',
+            measurement=F('ingredient__measurement_unit'),
+        ).annotate(amount=Sum('amount'))
+        filename = 'foodgram_shopping_cart_{}.pdf'.format(uuid4().time_low)
+        try:
+            pdf_buffer = create_pdf(recipes, ingredients, request=request)
+        except Exception as exc:
+            raise ValueError(exc)
+        return FileResponse(pdf_buffer, as_attachment=True, filename=filename)
 
     def __create_destroy_recipes(self, request, pk):
         if request.method == "POST":
@@ -259,7 +248,7 @@ class RecipeViewSet(ModelViewSet):
         return self.__create_destroy_recipes(request, pk)
 
 
-class TagViewSet(ReadOnlyModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
@@ -271,19 +260,3 @@ class IngredientViewSet(TagViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
-
-
-
-
-
-
-# TODO ингредиенты
-# TODO почистить селфы в актио.нах
-
-
-
-
-
-
-
-

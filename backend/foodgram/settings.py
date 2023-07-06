@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv(
     'django-insecure-f_eap&w&^7otdz=huwtl3e2#e2ufl%ytrv%1s4o1cx22=b9luu'
 )
 
-DEBUG = os.getenv('DJANGO_DEBUG', True)
+DEBUG = bool(os.getenv('DJANGO_DEBUG', True))
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost 127.0.0.1 [::1]').split(' ')
 
@@ -61,7 +61,7 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.' + os.getenv('DATABASE', 'sqlite3'),
+        'ENGINE': 'django.db.backends.' + os.getenv('DJANGO_ENGINE', 'sqlite3'),
         'NAME': os.getenv('POSTGRES_DB', BASE_DIR / 'db.sqlite3'),
         'USER': os.getenv('POSTGRES_USER', 'django'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
@@ -122,8 +122,6 @@ REST_FRAMEWORK = {
 
 }
 
-AUTH_USER_MODEL = 'users.User'
-
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
@@ -132,8 +130,24 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.ScryptPasswordHasher",
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
+USER_FIRST_NAME_MAX_LENGTH = 150
+USER_LAST_NAME_MAX_LENGTH = 150
+USER_PASSWORD_MAX_LENGTH = 150
+USER_EMAIL_MAX_LENGTH = 254
+TAG_NAME_MAX_LENGTH = 200
+TAG_SLUG_MAX_LENGTH = 200
+TAG_COLOR_MAX_LENGTH = 7
+INGREDIENT_NAME_MAX_LENGTH = 200
+INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH = 200
+RECIPE_NAME_MAX_LENGTH = 200
+
+
 COOKING_TIME_MIN = 1
 INGREDIENT_AMOUNT_MIN = 1
+PDF_FONT_SIZE = 12
+
 
 UNIQUE_TOGETHER_VALIDATOR_DATA = {
     'Subscriptions': {

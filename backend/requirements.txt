@@ -28,4 +28,5 @@ argon2-cffi
 drf-base64==2.0
 django-filter
 # django-filter==2.4
+reportlab
 # TODO: почистить

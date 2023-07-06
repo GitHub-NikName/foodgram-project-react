@@ -5,9 +5,6 @@ from django.contrib.auth.models import BaseUserManager
 from django.conf import settings
 
 
-help_text = {}  # TODO: хз //собрать сюда или удалить.
-
-
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -56,12 +53,21 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    first_name = models.CharField(_("first name"), max_length=150)
-    last_name = models.CharField(_("last name"), max_length=150)
-    password = models.CharField(_("password"), max_length=150)
+    first_name = models.CharField(
+        _("first name"),
+        max_length=settings.USER_FIRST_NAME_MAX_LENGTH
+    )
+    last_name = models.CharField(
+        _("last name"),
+        max_length=settings.USER_LAST_NAME_MAX_LENGTH
+    )
+    password = models.CharField(
+        _("password"),
+        max_length=settings.USER_PASSWORD_MAX_LENGTH
+    )
     email = models.EmailField(
         _("email address"),
-        max_length=254,
+        max_length=settings.USER_EMAIL_MAX_LENGTH,
         unique=True,
         error_messages={
             'unique':
@@ -81,8 +87,3 @@ class User(AbstractUser):
 
     def __repr__(self):
         return self.__str__()
-
-
-
-# TODO хелп текст в словарь?
-# TODO подправить локализацию???
