@@ -1,19 +1,28 @@
 from typing import Any
-
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.validators import validate_slug
 from django.utils.translation import gettext_lazy as _
 
-from .validators import validate_cooking_time_min, validate_ingredient_amount_min
-from django.conf import settings
+from .validators import validate_cooking_time_min
+from .validators import validate_ingredient_amount_min
 
 User = get_user_model()
 
 
+def get_constrains(fields: list, cls_name: str) -> list[Any]:
+    return [
+        models.UniqueConstraint(
+                fields=fields,
+                name='user_recipe_%s' % cls_name
+            )
+    ]
+
+
 class Base(models.Model):
-    # def __str__(self):
-    #     pass
+    def __str__(self):
+        return "%s(%s, %s)" % (type(self).__name__, self.pk, self.name)
 
     def __repr__(self):
         return self.__str__()
@@ -29,6 +38,9 @@ class RecipeMixin(models.Model):
         on_delete=models.CASCADE,
     )
 
+    class Meta:
+        abstract = True
+
 
 class UserMixin(models.Model):
     user = models.ForeignKey(
@@ -37,17 +49,11 @@ class UserMixin(models.Model):
         on_delete=models.CASCADE,
     )
 
-
-def get_constrains(fields: list, cls_name: str) -> list[Any]:
-    return [
-        models.UniqueConstraint(
-                fields=fields,
-                name='user_recipe_%s' % cls_name
-            ),
-    ]
+    class Meta:
+        abstract = True
 
 
-class Tag(models.Model):
+class Tag(Base):
     name = models.CharField(
         'Название',
         max_length=settings.TAG_NAME_MAX_LENGTH,
@@ -72,14 +78,8 @@ class Tag(models.Model):
         verbose_name = 'Tag'
         verbose_name_plural = 'Tags'
 
-    def __str__(self):
-        return "%s(%s, %s)" % (type(self).__name__, self.pk, self.name)
 
-    def __repr__(self):
-        return self.__str__()
-
-
-class Ingredient(models.Model):
+class Ingredient(Base):
     name = models.CharField(
         'Название ингредиента',
         max_length=settings.INGREDIENT_NAME_MAX_LENGTH,
@@ -90,11 +90,8 @@ class Ingredient(models.Model):
         max_length=settings.INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH
     )
 
-    def __str__(self):
-        return self.name
 
-
-class Recipe(models.Model):
+class Recipe(Base):
     name = models.CharField(
         'Название',
         max_length=settings.RECIPE_NAME_MAX_LENGTH
@@ -131,13 +128,9 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
-    def __str__(self):
-        return "%s(%s, %s)" % (self.__class__.__name__, self.pk, self.name)
 
-
-class IngredientInRecipe(models.Model):
+class IngredientInRecipe(Base, RecipeMixin):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(
         'Количество',
         validators=[validate_ingredient_amount_min]
@@ -149,17 +142,7 @@ class IngredientInRecipe(models.Model):
         )
 
 
-class ShoppingCart(models.Model):
-    user = models.ForeignKey(
-        User,
-        verbose_name=_('user'),
-        on_delete=models.CASCADE,
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        verbose_name='Рецепт',
-        on_delete=models.CASCADE,
-    )
+class ShoppingCart(Base, RecipeMixin, UserMixin):
 
     class Meta:
         constraints = get_constrains(['user', 'recipe'], 'shoppingcart')
@@ -171,21 +154,8 @@ class ShoppingCart(models.Model):
             type(self).__name__, self.pk, self.user, self.recipe
         )
 
-    def __repr__(self):
-        return self.__str__()
 
-
-class FavoriteRecipe(models.Model):
-    user = models.ForeignKey(
-        User,
-        verbose_name=_('user'),
-        on_delete=models.CASCADE,
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        verbose_name='Рецепт',
-        on_delete=models.CASCADE,
-    )
+class FavoriteRecipe(Base, RecipeMixin, UserMixin):
 
     class Meta:
         constraints = get_constrains(['user', 'recipe'], 'favoriterecipe')
@@ -197,22 +167,19 @@ class FavoriteRecipe(models.Model):
             type(self).__name__, self.pk, self.user, self.recipe
         )
 
-    def __repr__(self):
-        return self.__str__()
 
-
-class Subscriptions(models.Model):
-    user = models.ForeignKey(
-        User,
-        verbose_name=_('user'),
-        on_delete=models.CASCADE,
-        related_name='follower'
-    )
+class Subscriptions(Base, UserMixin):
     author = models.ForeignKey(
         User,
         verbose_name='Автор рецепта',
         on_delete=models.CASCADE,
+        related_name='following'
     )
 
     class Meta:
         constraints = get_constrains(['user', 'author'], 'subscriptions')
+
+    def __str__(self):
+        return '%s(%s, %s, %s)' % (
+            type(self).__name__, self.pk, self.user, self.author
+        )

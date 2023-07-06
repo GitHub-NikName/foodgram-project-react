@@ -1,6 +1,9 @@
 from io import BytesIO
-from typing import TypeVar
-from typing import Generic
+from typing import (
+    TypeVar,
+    Generic,
+    Any
+)
 from collections import OrderedDict
 from django.conf import settings
 from django.db import models
@@ -27,14 +30,14 @@ def create_list_obj(cls: Generic[ModelType], items: list[OrderedDict | dict],
         raise ValueError(exc)
 
 
-def empty_validator(value):
+def empty_validator(value: Any) -> Any:
     if not value:
         raise ValidationError('Обязательное поле.')
     return value
 
 
 class DynamicUniqueTogetherValidator(UniqueTogetherValidator):
-    """Проверяет на уникальность поля одной модели."""
+    """Проверяет на уникальность поля модели."""
     def __init__(self, model: Generic[ModelType], fields=None, message=None):
         try:
             # fields and message
@@ -55,7 +58,6 @@ def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=LETTER)
     pdfmetrics.registerFont(TTFont('DejaVuSerif', 'DejaVuSerif.ttf'))
-    ingredients_text = '\u2022 {ingredient__name} - {amount} {measurement}.'
 
     # header
     c.setFillColor(gray)
@@ -73,6 +75,7 @@ def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
     y -= 0.5 * inch
 
     # список ингредиентов
+    ingredients_text = '\u2022 {ingredient__name} ({measurement}) - {amount}'
     c.setFont('DejaVuSerif', settings.PDF_FONT_SIZE + 4)
     c.drawString(x, y, 'Список ингредиентов:')
     c.setFont('DejaVuSerif', settings.PDF_FONT_SIZE)

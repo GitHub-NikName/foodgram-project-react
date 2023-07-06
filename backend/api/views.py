@@ -67,7 +67,6 @@ class UserViewSet(CreateListRetrieveViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-
         queryset = super().get_queryset().annotate(is_subscribed=Exists(
             Subquery(
                 Subscriptions.objects.filter(
@@ -80,7 +79,9 @@ class UserViewSet(CreateListRetrieveViewSet):
         if self.action in ('subscriptions', 'subscribe'):
             return queryset.annotate(
                 recipes_count=Count('recipes')
-            ).prefetch_related('recipes')
+            ).prefetch_related('recipes').filter(
+                following__user=self.request.user
+            )
         return queryset
 
     def get_serializer_class(self):
@@ -115,11 +116,8 @@ class UserViewSet(CreateListRetrieveViewSet):
 
     @action(detail=False)
     def subscriptions(self, request):
-        queryset = self.get_queryset().filter(
-            subscriptions__user=self.request.user
-        )
         serializer = self.get_serializer(
-            self.paginate_queryset(queryset),
+            self.paginate_queryset(self.get_queryset()),
             many=True
         )
         return self.get_paginated_response(serializer.data)

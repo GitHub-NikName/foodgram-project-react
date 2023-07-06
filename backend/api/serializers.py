@@ -162,6 +162,7 @@ class FavoriteSerializer(ShoppingCartSerializer):
 
     class Meta(ShoppingCartSerializer.Meta):
         model = FavoriteRecipe
+        validators = [DynamicUniqueTogetherValidator(model)]
 
 
 class SubscriptionsSerializer(UserSerializer):
