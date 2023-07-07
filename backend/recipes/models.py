@@ -7,7 +7,8 @@ from django.utils.translation import gettext_lazy as _
 
 from .validators import (
     validate_cooking_time_min,
-    validate_ingredient_amount_min
+    validate_ingredient_amount_min,
+    validate_hex_color
 )
 
 
@@ -73,6 +74,7 @@ class Tag(Base):
     color = models.CharField(
         'Цвет в HEX',
         max_length=settings.TAG_COLOR_MAX_LENGTH,
+        validators=[validate_hex_color],
         unique=True,
         blank=True,
         null=True
