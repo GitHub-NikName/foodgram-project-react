@@ -1,10 +1,10 @@
 # build env
-ARG VERSION=13.12.0-alpine
+ARG VERSION=18-alpine3.18
 
 FROM node:$VERSION as builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 CMD cp -r build/. /static
