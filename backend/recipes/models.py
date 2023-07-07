@@ -22,10 +22,11 @@ def get_constrains(fields: list, cls_name: str) -> list[Any]:
 
 class Base(models.Model):
     def __str__(self):
-        return "%s(%s, %s)" % (type(self).__name__, self.pk, self.name)
-
-    def __repr__(self):
-        return self.__str__()
+        field_1, field_2 = self._meta.fields[1:3]
+        if type(field_2).__name__ == 'ForeignKey':
+            return "%s - %s" % (getattr(self, field_1.name),
+                                getattr(self, field_2.name))
+        return '%s' % getattr(self, field_1.name)
 
     class Meta:
         abstract = True
@@ -59,13 +60,6 @@ class Tag(Base):
         max_length=settings.TAG_NAME_MAX_LENGTH,
         unique=True
     )
-    color = models.CharField(
-        'Цвет в HEX',
-        max_length=settings.TAG_COLOR_MAX_LENGTH,
-        unique=True,
-        blank=True,
-        null=True
-    )
     slug = models.SlugField(
         'Уникальный слаг',
         max_length=settings.TAG_SLUG_MAX_LENGTH,
@@ -73,10 +67,17 @@ class Tag(Base):
         validators=[validate_slug],
         db_index=True
     )
+    color = models.CharField(
+        'Цвет в HEX',
+        max_length=settings.TAG_COLOR_MAX_LENGTH,
+        unique=True,
+        blank=True,
+        null=True
+    )
 
     class Meta:
-        verbose_name = 'Tag'
-        verbose_name_plural = 'Tags'
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
 
 class Ingredient(Base):
@@ -90,20 +91,24 @@ class Ingredient(Base):
         max_length=settings.INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH
     )
 
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
 
 class Recipe(Base):
     name = models.CharField(
         'Название',
         max_length=settings.RECIPE_NAME_MAX_LENGTH
     )
-    text = models.TextField('Описание')
-    tags = models.ManyToManyField(Tag, verbose_name='Список тегов')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Автор рецепта'
     )
+    text = models.TextField('Описание')
+    tags = models.ManyToManyField(Tag, verbose_name='Список тегов')
     image = models.ImageField(
         'Ссылка на картинку на сайте',
         upload_to='recipes/images/'
@@ -136,36 +141,23 @@ class IngredientInRecipe(Base, RecipeMixin):
         validators=[validate_ingredient_amount_min]
     )
 
-    def __str__(self):
-        return "%s(%s, %s)" % (
-            self.__class__.__name__, self.ingredient, self.recipe
-        )
+    class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
 
-class ShoppingCart(Base, RecipeMixin, UserMixin):
+class ShoppingCart(Base, UserMixin, RecipeMixin):
 
     class Meta:
         constraints = get_constrains(['user', 'recipe'], 'shoppingcart')
-        verbose_name = 'Корзина покупок'
-        verbose_name_plural = 'Корзине покупок'
-
-    def __str__(self):
-        return '%s(%s, %s, %s)' % (
-            type(self).__name__, self.pk, self.user, self.recipe
-        )
+        verbose_name = verbose_name_plural = 'Корзина покупок'
 
 
 class FavoriteRecipe(Base, RecipeMixin, UserMixin):
 
     class Meta:
         constraints = get_constrains(['user', 'recipe'], 'favoriterecipe')
-        verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранном'
-
-    def __str__(self):
-        return '%s(%s, %s, %s)' % (
-            type(self).__name__, self.pk, self.user, self.recipe
-        )
+        verbose_name = verbose_name_plural = 'Избранное'
 
 
 class Subscriptions(Base, UserMixin):
@@ -178,8 +170,5 @@ class Subscriptions(Base, UserMixin):
 
     class Meta:
         constraints = get_constrains(['user', 'author'], 'subscriptions')
-
-    def __str__(self):
-        return '%s(%s, %s, %s)' % (
-            type(self).__name__, self.pk, self.user, self.author
-        )
+        verbose_name = 'Подписка на автора'
+        verbose_name_plural = 'Подписки на авторов'

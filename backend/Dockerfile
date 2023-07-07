@@ -5,8 +5,7 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apk add --no-cache netcat-openbsd
 
- WORKDIR /app
-#WORKDIR /opt/project
+WORKDIR /app
 
 COPY ./requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir

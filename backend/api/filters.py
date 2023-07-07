@@ -1,4 +1,5 @@
 from django_filters import rest_framework as filters
+from django.db.models import Q
 
 from recipes.models import Recipe, Tag, Ingredient
 
@@ -17,8 +18,13 @@ class RecipeFilter(filters.FilterSet):
 
 
 class IngredientFilter(filters.FilterSet):
-    name = filters.CharFilter(field_name='name', lookup_expr='istartswith')
+    name = filters.CharFilter(field_name='name', method='filter_name')
+
+    def filter_name(self, queryset, name, value):
+        return queryset.filter(
+            Q(name__istartswith=value) | Q(name__icontains=value)
+        )
 
     class Meta:
         model = Ingredient
-        fields = ('name', )
+        fields = ['name']

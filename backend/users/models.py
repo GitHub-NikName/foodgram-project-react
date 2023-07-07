@@ -83,7 +83,4 @@ class User(AbstractUser):
         verbose_name_plural = _("users")
 
     def __str__(self):
-        return '%s(%s, %s)' % (type(self).__name__, self.pk, self.username)
-
-    def __repr__(self):
-        return self.__str__()
+        return self.username

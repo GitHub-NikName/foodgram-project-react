@@ -119,7 +119,6 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',),
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.LimitPageNumberPagination',
     'PAGE_SIZE': 6,
-
 }
 
 PASSWORD_HASHERS = [
@@ -133,6 +132,7 @@ PASSWORD_HASHERS = [
 AUTH_USER_MODEL = 'users.User'
 
 # constants
+MAX_PAGE_SIZE = 100
 USER_FIRST_NAME_MAX_LENGTH = 150
 USER_LAST_NAME_MAX_LENGTH = 150
 USER_PASSWORD_MAX_LENGTH = 150

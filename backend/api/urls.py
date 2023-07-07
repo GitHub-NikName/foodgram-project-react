@@ -1,10 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import UserViewSet
-from .views import TagViewSet
-from .views import RecipeViewSet
-from .views import IngredientViewSet
+from .views import (
+    UserViewSet,
+    TagViewSet,
+    RecipeViewSet,
+    IngredientViewSet
+)
 
 
 app_name = 'api'
@@ -21,26 +23,3 @@ urlpatterns = [
 ]
 
 urlpatterns += v1_router.urls
-
-
-
-# v1_router.register('categories', CategoriesViewSet, basename='categories')
-# v1_router.register(r'titles/(?P<title_id>\d+)/reviews', ReviewVieSet,
-#                    basename='review')
-# v1_router.register(
-#     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
-#     CommentViewSet,
-#     basename='comment'
-# )
-
-
-# urlpatterns = [
-    # path('auth/signup/', signup, name='signup'),
-    # path('auth/token/',
-    #      TokenObtainPairView.as_view(serializer_class=TokenAuthSerializer),
-    #      name='token_obtain_pair'),
-# ]
-
-
-#  trailing_slash удаляет конечные /
-# v1_router = DefaultRouter(trailing_slash=False)

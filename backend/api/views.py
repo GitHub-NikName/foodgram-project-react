@@ -232,7 +232,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if not obj.exists():
             raise ValidationError(
                 f'Этого рецепта нет '
-                f'в {self.get_queryset().model._meta.verbose_name_plural}.'
+                f'в {self.get_queryset().model._meta.verbose_name}.'
             )
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
