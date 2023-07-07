@@ -2,7 +2,7 @@ name: Main Foodgram workflow
 on:
   push:
     branches:
-      - main
+      - 'main'
   workflow_dispatch:
 
 jobs:
