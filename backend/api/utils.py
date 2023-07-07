@@ -64,7 +64,7 @@ def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
     c.rect(0, 10.4 * inch, 8.5 * inch, 0.6 * inch, fill=1, stroke=0)
     c.setFillColor(black)
     c.setFont('DejaVuSerif', settings.PDF_FONT_SIZE + 4)
-    c.drawCentredString(8.5 * inch/2, 10.6 * inch, 'Продуктовый помощник')
+    c.drawCentredString(8.5 * inch / 2, 10.6 * inch, 'Продуктовый помощник')
 
     # список рецептов
     c.drawString(x := 20, y := 10 * inch, 'Список рецептов:')

@@ -14,9 +14,9 @@ User = get_user_model()
 def get_constrains(fields: list, cls_name: str) -> list[Any]:
     return [
         models.UniqueConstraint(
-                fields=fields,
-                name='user_recipe_%s' % cls_name
-            )
+            fields=fields,
+            name='user_recipe_%s' % cls_name
+        )
     ]
 
 
