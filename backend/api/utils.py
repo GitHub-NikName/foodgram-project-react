@@ -1,23 +1,17 @@
-from io import BytesIO
-from typing import (
-    TypeVar,
-    Generic,
-    Any
-)
 from collections import OrderedDict
+from io import BytesIO
+from typing import Any, Generic, TypeVar
+
 from django.conf import settings
 from django.db import models
 from django.db.models.query import QuerySet
-from rest_framework.validators import ValidationError
-from rest_framework.validators import UniqueTogetherValidator
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.colors import black, gray
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.units import inch
-from reportlab.lib.colors import gray
-from reportlab.lib.colors import black
+from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
+from reportlab.pdfgen import canvas
+from rest_framework.validators import UniqueTogetherValidator, ValidationError
 
 ModelType = TypeVar('ModelType', bound=models.Model)
 

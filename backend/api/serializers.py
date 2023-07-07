@@ -1,27 +1,15 @@
 from collections import OrderedDict
-from rest_framework import serializers
-from django.db import transaction
+
 from django.contrib.auth import get_user_model
-from drf_base64.fields import Base64ImageField
+from django.db import transaction
 from djoser.serializers import UserCreateSerializer
+from drf_base64.fields import Base64ImageField
+from rest_framework import serializers
 
-from recipes.models import (
-    Recipe,
-    Subscriptions
-)
-from recipes.models import (
-    Tag,
-    Ingredient,
-    IngredientInRecipe,
-    FavoriteRecipe,
-    ShoppingCart
-)
-from .utils import (
-    create_list_obj,
-    empty_validator,
-    DynamicUniqueTogetherValidator
-)
-
+from recipes.models import (FavoriteRecipe, Ingredient, IngredientInRecipe,
+                            Recipe, ShoppingCart, Subscriptions, Tag)
+from .utils import (DynamicUniqueTogetherValidator, create_list_obj,
+                    empty_validator)
 
 User = get_user_model()
 

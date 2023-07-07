@@ -1,53 +1,28 @@
 from uuid import uuid4
 
+from django.contrib.auth import get_user_model
+from django.db.models import (Count, Exists, F, OuterRef, Prefetch, Subquery,
+                              Sum)
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
-from django.db.models import (
-    Exists,
-    Count,
-    F,
-    Subquery,
-    OuterRef,
-    Prefetch,
-    Sum
-)
-from rest_framework import (
-    viewsets,
-    status
-)
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from djoser.serializers import SetPasswordSerializer
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.serializers import SetPasswordSerializer
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
-from recipes.models import (
-    Tag,
-    Recipe,
-    Ingredient,
-    ShoppingCart,
-    Subscriptions,
-    FavoriteRecipe,
-    IngredientInRecipe
-)
-from .serializers import (
-    UserSerializer,
-    SubscriptionsSerializer,
-    ShoppingCartSerializer,
-    FavoriteSerializer,
-    TagSerializer,
-    RecipeReadSerializer,
-    RecipeWriteSerializer,
-    RecipeShortSerializer,
-    IngredientSerializer,
-    SubscribeSerialization
-)
+from recipes.models import (FavoriteRecipe, Ingredient, IngredientInRecipe,
+                            Recipe, ShoppingCart, Subscriptions, Tag)
+from .filters import IngredientFilter, RecipeFilter
 from .mixins import CreateListRetrieveViewSet
-from .filters import RecipeFilter, IngredientFilter
 from .permissions import IsAuthenticatedOrOwnerOrReadOnly
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeReadSerializer, RecipeShortSerializer,
+                          RecipeWriteSerializer, ShoppingCartSerializer,
+                          SubscribeSerialization, SubscriptionsSerializer,
+                          TagSerializer, UserSerializer)
 from .utils import create_pdf
-
 
 User = get_user_model()
 

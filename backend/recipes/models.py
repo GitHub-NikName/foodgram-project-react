@@ -1,16 +1,13 @@
 from typing import Any
-from django.db import models
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_slug
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .validators import (
-    validate_cooking_time_min,
-    validate_ingredient_amount_min,
-    validate_hex_color
-)
-
+from .validators import (validate_cooking_time_min, validate_hex_color,
+                         validate_ingredient_amount_min)
 
 User = get_user_model()
 
