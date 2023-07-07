@@ -96,7 +96,7 @@ class RecipeWriteSerializer(RecipeReadSerializer):
     def validate_ingredients(self, value):
         empty_validator(value)
         if len(value) != len(set([i['ingredient'].id for i in value])):
-            raise serializers.ValidationError('Рецепты повторяются.')
+            raise serializers.ValidationError('Ингредиенты повторяются.')
         return value
 
     def create(self, validated_data: dict) -> Recipe:

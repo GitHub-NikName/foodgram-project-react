@@ -14,10 +14,8 @@ from django.db.models import (
 )
 from rest_framework import (
     viewsets,
-    mixins,
     status
 )
-
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -46,18 +44,13 @@ from .serializers import (
     IngredientSerializer,
     SubscribeSerialization
 )
+from .mixins import CreateListRetrieveViewSet
 from .filters import RecipeFilter, IngredientFilter
 from .permissions import IsAuthenticatedOrOwnerOrReadOnly
 from .utils import create_pdf
 
 
 User = get_user_model()
-
-
-class CreateListRetrieveViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                                mixins.RetrieveModelMixin,
-                                viewsets.GenericViewSet):
-    pass
 
 
 class UserViewSet(CreateListRetrieveViewSet):
@@ -101,16 +94,14 @@ class UserViewSet(CreateListRetrieveViewSet):
     @action(detail=False)
     def me(self, request, *args, **kwargs):
         """Профиль пользователя"""
-        serializer = self.get_serializer(
-            self.get_queryset().filter(pk=request.user.id).first()
-        )
+        serializer = self.get_serializer(self.request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(['post'], detail=False)
     def set_password(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        request.user.set_password(serializer.data["new_password"])
+        request.user.set_password(serializer.validated_data["new_password"])
         request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -137,7 +128,10 @@ class UserViewSet(CreateListRetrieveViewSet):
         author = self.get_object()
         obj = Subscriptions.objects.filter(user=request.user, author=author)
         if not obj.exists():
-            raise ValidationError('Нет подписки на этого автора.')
+            return Response(
+                {'errors': 'Нет подписки на этого автора.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -209,7 +203,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = queryset.values(
             'ingredient__name',
             measurement=F('ingredient__measurement_unit'),
-        ).annotate(amount=Sum('amount'))
+        ).annotate(amount_sum=Sum('amount'))
         filename = 'foodgram_shopping_cart_{}.pdf'.format(uuid4().time_low)
         try:
             pdf_buffer = create_pdf(recipes, ingredients, request=request)
@@ -230,9 +224,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         obj = self.get_queryset().filter(recipe=recipe)
 
         if not obj.exists():
-            raise ValidationError(
-                f'Этого рецепта нет '
-                f'в {self.get_queryset().model._meta.verbose_name}.'
+            return Response(
+                {'errors': f'Этого рецепта нет в '
+                           f'{self.get_queryset().model._meta.verbose_name}.'},
+                status=status.HTTP_400_BAD_REQUEST
             )
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

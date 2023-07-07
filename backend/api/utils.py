@@ -75,13 +75,13 @@ def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
     y -= 0.5 * inch
 
     # список ингредиентов
-    ingredients_text = '\u2022 {ingredient__name} ({measurement}) - {amount}'
+    text = '\u2022 {ingredient__name} ({measurement}) - {amount_sum}'
     c.setFont('DejaVuSerif', settings.PDF_FONT_SIZE + 4)
     c.drawString(x, y, 'Список ингредиентов:')
     c.setFont('DejaVuSerif', settings.PDF_FONT_SIZE)
     for item in ingredients:
         y -= 20
-        c.drawString(x, y, ingredients_text.format(**item))
+        c.drawString(x, y, text.format(**item))
     y -= 0.5 * inch
 
     # footer
