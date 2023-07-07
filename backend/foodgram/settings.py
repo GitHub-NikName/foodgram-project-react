@@ -95,16 +95,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-# Default primary key field type
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -131,7 +126,6 @@ PASSWORD_HASHERS = [
 
 AUTH_USER_MODEL = 'users.User'
 
-# constants
 MAX_PAGE_SIZE = 100
 USER_FIRST_NAME_MAX_LENGTH = 150
 USER_LAST_NAME_MAX_LENGTH = 150

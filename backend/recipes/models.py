@@ -5,8 +5,11 @@ from django.contrib.auth import get_user_model
 from django.core.validators import validate_slug
 from django.utils.translation import gettext_lazy as _
 
-from .validators import validate_cooking_time_min
-from .validators import validate_ingredient_amount_min
+from .validators import (
+    validate_cooking_time_min,
+    validate_ingredient_amount_min
+)
+
 
 User = get_user_model()
 
@@ -142,6 +145,9 @@ class IngredientInRecipe(Base, RecipeMixin):
     )
 
     class Meta:
+        constraints = get_constrains(
+            ['ingredient', 'recipe'], 'ingredient_in_recipe'
+        )
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
 
