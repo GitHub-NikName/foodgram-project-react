@@ -7,9 +7,9 @@ from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import (FavoriteRecipe, Ingredient, IngredientInRecipe,
-                            Recipe, ShoppingCart, Subscriptions, Tag)
+                            Recipe, ShoppingCart, Subscriptions, Tag,)
 from .utils import (DynamicUniqueTogetherValidator, create_list_obj,
-                    empty_validator)
+                    empty_validator,)
 
 User = get_user_model()
 

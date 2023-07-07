@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .validators import (validate_cooking_time_min, validate_hex_color,
-                         validate_ingredient_amount_min)
+                         validate_ingredient_amount_min,)
 
 User = get_user_model()
 
