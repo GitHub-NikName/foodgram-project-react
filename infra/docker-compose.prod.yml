@@ -26,6 +26,7 @@ services:
     volumes:
       - static:/app/static
       - media:/app/media
+      - ./data:/data
     depends_on:
       - db
     restart: always
