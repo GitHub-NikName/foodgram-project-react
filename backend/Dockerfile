@@ -13,4 +13,3 @@ COPY . .
 RUN chmod 777 /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi"]
-#CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
