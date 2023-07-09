@@ -29,7 +29,7 @@ def open_file(file: PosixPath) -> list[dict | str]:
 
 def load_json_files(files: list[PosixPath]) -> None:
     for file in files:
-        if file.name == 'recipes_soup':
+        if file.name == 'recipes_soup.json':
             print('Файл %s пропущен. Комманда для загрузки вручную:'
                   ' python manage.py load_recipes' % file.name)
             continue
