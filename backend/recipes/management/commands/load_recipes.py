@@ -15,7 +15,7 @@ def load_recipes():
         Recipe(
             name=i['name'],
             text=i['text'],
-            image=i['image'],
+            image='recipes/images/' + i['image'],
             cooking_time=i['cooking_time'],
             author=user) for i in recipes
     ]
