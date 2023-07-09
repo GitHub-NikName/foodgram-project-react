@@ -1,5 +1,5 @@
 import json
-import os
+from pathlib import PosixPath
 
 import rstr
 from django.conf import settings
@@ -14,49 +14,46 @@ FILES_CLASSES = {
     'tags': Tag,
 }
 
-PATH_FILES = os.path.join(settings.BASE_DIR.parent, 'data')
+PATH_FILES = settings.BASE_DIR.parent.joinpath('data')
 
 
-def open_file(file_name: str) -> list[dict | str]:
-    path = os.path.join(PATH_FILES, file_name)
+def open_file(file: PosixPath) -> list[dict | str]:
     try:
-        with open(path, encoding='utf-8') as file:
-            if path.endswith('.json'):
-                return json.load(file)
-            return [i.strip() for i in file.read().split(',')]
+        if file.name.endswith('.json'):
+            return json.load(file.open(encoding='utf-8'))
+        return [i.strip() for i in file.read_text(encoding='utf-8').split(',')]
     except FileNotFoundError:
-        print('Файл %s не найден.' % path)
+        print('Файл %s не найден.' % file.as_posix())
 
 
-def load_json_files(json_files: list[str]):
-    for file_name in json_files:
-        cls = FILES_CLASSES[file_name.split('.')[0]]
-        not_loaded = 'Файл %s не загружен.' % file_name
-        loaded = 'Файл %s загружен.' % file_name
+def load_json_files(files: list[PosixPath]) -> None:
+    for file in files:
+        cls = FILES_CLASSES[file.name.split('.')[0]]
+        not_loaded = 'Файл %s не загружен.' % file.name
+        loaded = 'Файл %s загружен.' % file.name
         if cls.objects.exists():
             print(f'В таблице {cls.__name__} уже есть данные.', not_loaded)
             continue
         try:
-            objects = [cls(**el) for el in open_file(file_name)]
+            objects = [cls(**el) for el in open_file(file)]
             cls.objects.bulk_create(objects)
             print(loaded)
         except (ValueError, IntegrityError) as exc:
             print('Ошибка в загружаемых данных %s' % exc, not_loaded)
 
 
-def save_json(data):
-    path_file = os.path.join(PATH_FILES, 'tags.json')
-    with open(path_file, 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False)
-    print('Теги сохранены в файл %s' % path_file)
+def save_json(data: list[dict]) -> None:
+    file = PATH_FILES.joinpath('tags.json')
+    json.dump(data, file.open('w', encoding='utf-8'), ensure_ascii=False)
+    print('Теги сохранены в файл %s' % file.as_posix())
 
 
-def gen_tags():
+def gen_tags() -> None:
     if Tag.objects.exists():
         print('В таблице уже есть данные. Теги не загружены')
         return
     print('генерируем теги.')
-    tags_list_path = os.path.join(PATH_FILES, 'tags.txt')
+    tags_list_path = PATH_FILES.joinpath('tags.txt')
     tags = open_file(tags_list_path)
     slugs = [slugify(tag, language_code='ru') for tag in tags]
     colors = []
@@ -82,8 +79,8 @@ def gen_tags():
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        json_files = [i for i in os.listdir(PATH_FILES) if i.endswith('.json')]
+        json_files = list(PATH_FILES.glob('*.json'))
         load_json_files(json_files)
-        if 'tags.json' not in json_files:
+        if PATH_FILES.joinpath('tags.json') not in json_files:
             print('файл tags.json не найден')
             gen_tags()
