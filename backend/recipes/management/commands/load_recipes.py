@@ -1,10 +1,8 @@
-from recipes.models import Ingredient, Recipe, IngredientInRecipe, Tag
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 
-from .load_data import open_file
-from .load_data import PATH_FILES
-
+from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
+from .load_data import PATH_FILES, open_file
 
 User = get_user_model()
 

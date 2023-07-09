@@ -7,7 +7,7 @@ from django.core.management import BaseCommand
 from django.db import IntegrityError
 from transliterate import slugify
 
-from recipes.models import Ingredient, Tag, Recipe
+from recipes.models import Ingredient, Recipe, Tag
 
 FILES_CLASSES = {
     'ingredients': Ingredient,

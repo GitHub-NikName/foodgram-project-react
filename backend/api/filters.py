@@ -1,4 +1,4 @@
-from django.db.models import Q, QuerySet, BooleanField, ExpressionWrapper
+from django.db.models import BooleanField, ExpressionWrapper, Q, QuerySet
 from django_filters import rest_framework as filters
 
 from recipes.models import Ingredient, Recipe, Tag
