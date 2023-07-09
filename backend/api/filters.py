@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, QuerySet, BooleanField, ExpressionWrapper
 from django_filters import rest_framework as filters
 
 from recipes.models import Ingredient, Recipe, Tag
@@ -20,10 +20,15 @@ class RecipeFilter(filters.FilterSet):
 class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', method='filter_name')
 
-    def filter_name(self, queryset, name, value):
+    def filter_name(self, queryset: QuerySet, name, value):
         return queryset.filter(
             Q(name__istartswith=value) | Q(name__icontains=value)
-        )
+        ).annotate(
+            is_start=ExpressionWrapper(
+                Q(name__istartswith=value),
+                output_field=BooleanField()
+            )
+        ).order_by('-is_start', 'name')
 
     class Meta:
         model = Ingredient

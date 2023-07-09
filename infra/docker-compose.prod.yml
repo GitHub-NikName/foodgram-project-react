@@ -37,7 +37,7 @@ services:
     volumes:
       - static:/static
 
-  gateway:
+  nginx:
     image: nginx:1.24-alpine3.17
     container_name: foodgram_nginx
     depends_on:
