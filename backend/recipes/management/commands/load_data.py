@@ -7,11 +7,12 @@ from django.core.management import BaseCommand
 from django.db import IntegrityError
 from transliterate import slugify
 
-from recipes.models import Ingredient, Tag
+from recipes.models import Ingredient, Tag, Recipe
 
 FILES_CLASSES = {
     'ingredients': Ingredient,
     'tags': Tag,
+    'recipes_soups': Recipe
 }
 
 PATH_FILES = settings.BASE_DIR.parent.joinpath('data')
@@ -28,6 +29,10 @@ def open_file(file: PosixPath) -> list[dict | str]:
 
 def load_json_files(files: list[PosixPath]) -> None:
     for file in files:
+        if file.name == 'recipes_soup':
+            print('Файл %s пропущен. Комманда для загрузки вручную:'
+                  ' python manage.py load_recipes' % file.name)
+            continue
         cls = FILES_CLASSES[file.name.split('.')[0]]
         not_loaded = 'Файл %s не загружен.' % file.name
         loaded = 'Файл %s загружен.' % file.name
@@ -79,7 +84,7 @@ def gen_tags() -> None:
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        json_files = list(PATH_FILES.glob('*.json'))
+        json_files = list(PATH_FILES.glob('*.json', ))
         load_json_files(json_files)
         if PATH_FILES.joinpath('tags.json') not in json_files:
             print('файл tags.json не найден')
