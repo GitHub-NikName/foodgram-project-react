@@ -20,6 +20,7 @@ def load_recipes():
         return
 
     print('Загрузка рецептов из %s' % file_name)
+    print('%s рецептов' % len(recipes))
     recipes_list = [
         Recipe(
             name=i['name'],
@@ -38,13 +39,12 @@ def load_recipes():
         tags = Tag.objects.filter(slug__in=tags)
         recipe.tags.set(tags)
 
-    ingredients = [i['ingredients'] for i in recipes]
     ingredients_in_recipes = []
-    for i in range(len(ingredients)):
+    for i in range(len(recipes)):
         recipe = recipes_obj[i]
-        ingredients_data = ingredients[i]
+        ingredients = recipes[i]['ingredients']
 
-        for j in ingredients_data:
+        for j in ingredients:
             ingredient, _ = Ingredient.objects.get_or_create(
                 name=j['name'], measurement_unit=j['measurement_unit']
             )
@@ -53,7 +53,7 @@ def load_recipes():
                     ingredient=ingredient, recipe=recipe, amount=j['amount']
                 )
             )
-    IngredientInRecipe.objects.bulk_create(ingredients_in_recipes)
+        IngredientInRecipe.objects.bulk_create(ingredients_in_recipes)
     print('Рецепты из %s загружены' % file_name)
 
 
