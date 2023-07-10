@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 
@@ -7,10 +9,17 @@ from .load_data import PATH_FILES, open_file
 User = get_user_model()
 
 user = User.objects.get(id=1)
-recipes = open_file(PATH_FILES.joinpath('recipes_soups.json'))
+file_name = 'recipes.json'
+recipes = open_file(PATH_FILES.joinpath(file_name))
 
 
 def load_recipes():
+    if IngredientInRecipe.objects.exists():
+        print(f'В таблице {IngredientInRecipe.__name__} уже есть данные.')
+        print('Загрузка %s не выполнена' % file_name)
+        return
+
+    print('Загрузка рецептов из %s' % file_name)
     recipes_list = [
         Recipe(
             name=i['name'],
@@ -20,24 +29,36 @@ def load_recipes():
             author=user) for i in recipes
     ]
     recipes_obj = Recipe.objects.bulk_create(recipes_list)
-    tags = Tag.objects.filter(slug__in=['uzhin', 'sup'])
-    for i in recipes_obj:
-        i.tags.set(tags)
+    all_tags = Tag.objects.values_list('slug', flat=True)
+    tags_image = {i['name']: i['image'] for i in recipes}
+    for recipe in recipes_obj:
+        tags = [tag for tag in all_tags if tag in tags_image[recipe.name]]
+        if not tags:
+            tags = [random.choice(['завтрак', 'обед', 'ужин', []])]
+        tags = Tag.objects.filter(slug__in=tags)
+        recipe.tags.set(tags)
 
     ingredients = [i['ingredients'] for i in recipes]
+    ingredients_in_recipes = []
     for i in range(len(ingredients)):
         recipe = recipes_obj[i]
         ingredients_data = ingredients[i]
+
         for j in ingredients_data:
             ingredient, _ = Ingredient.objects.get_or_create(
                 name=j['name'], measurement_unit=j['measurement_unit']
             )
-            IngredientInRecipe.objects.create(
-                ingredient=ingredient, recipe=recipe, amount=j['amount']
+            ingredients_in_recipes.append(
+                IngredientInRecipe(
+                    ingredient=ingredient, recipe=recipe, amount=j['amount']
+                )
             )
+    IngredientInRecipe.objects.bulk_create(ingredients_in_recipes)
+    print('Рецепты из %s загружены' % file_name)
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
         load_recipes()
+
