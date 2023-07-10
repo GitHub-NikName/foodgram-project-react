@@ -61,4 +61,3 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         load_recipes()
-
