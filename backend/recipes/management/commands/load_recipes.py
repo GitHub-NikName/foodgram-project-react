@@ -53,7 +53,7 @@ def load_recipes():
                     ingredient=ingredient, recipe=recipe, amount=j['amount']
                 )
             )
-        IngredientInRecipe.objects.bulk_create(ingredients_in_recipes)
+    IngredientInRecipe.objects.bulk_create(ingredients_in_recipes)
     print('Рецепты из %s загружены' % file_name)
 
 
