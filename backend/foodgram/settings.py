@@ -13,9 +13,12 @@ DEBUG = os.getenv('DJANGO_DEBUG', False) == 'True'
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost 127.0.0.1 [::1]').split(' ')
 
-ALLOWED_ORIGINS = ['http://foodgram.didns.ru/', 'https://foodgram.didns.ru/']
+ALLOWED_ORIGINS = ['http://foodgram.didns.ru', 'https://foodgram.didns.ru']
 CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS.copy()
 
+# SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_SAMESITE = 'None'
+# CSRF_COOKIE_SECURE = True
 
 # if DEBUG:
 #     CSRF_TRUSTED_ORIGINS = ['http://', 'https://*']
