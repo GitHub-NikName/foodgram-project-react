@@ -13,6 +13,11 @@ DEBUG = os.getenv('DJANGO_DEBUG', False) == 'True'
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost 127.0.0.1 [::1]').split(' ')
 
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = ['https://foodgram.didns.ru/', 'http://foodgram.didns.ru/']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
