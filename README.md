@@ -1,7 +1,7 @@
 # Продуктовый помощник  Foodgram
 
 
-Доменное имя: www.foodgram.didns.ru
+Доменное имя: foodgram.didns.ru
 
 Админка:  
 login: 1@1.com  
