@@ -180,7 +180,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(amount_sum=Sum('amount'))
         filename = 'foodgram_shopping_cart_{}.pdf'.format(uuid4().time_low)
         try:
-            pdf_buffer = create_pdf(recipes, ingredients, request=request)
+            pdf_buffer = create_pdf(
+                recipes, ingredients, host=request._request.META['HTTP_HOST']
+            )
         except Exception as exc:
             raise ValueError(exc)
         return FileResponse(pdf_buffer, as_attachment=True, filename=filename)

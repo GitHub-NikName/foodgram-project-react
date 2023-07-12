@@ -3,9 +3,6 @@
 
 Доменное имя: foodgram.didns.ru
 
-Админка:  
-login: 1@1.com  
-password: admin
 
 ## Описание
 

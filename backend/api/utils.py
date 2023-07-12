@@ -48,7 +48,7 @@ class DynamicUniqueTogetherValidator(UniqueTogetherValidator):
 
 def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
     """Запись списка покупок в pdf"""
-    request = kwargs.get('request')
+    host = kwargs.get('host')
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=LETTER)
     pdfmetrics.registerFont(TTFont('DejaVuSerif', 'DejaVuSerif.ttf'))
@@ -80,7 +80,7 @@ def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
 
     # footer
     c.line(0, y, 8.5 * inch, y)
-    footer_text = 'www.' + request._request.META['HTTP_HOST'] or 'Foodgram'
+    footer_text = 'https://' + host or 'Foodgram'
     c.drawRightString(8.5 * inch - 50, y - 20, footer_text)
 
     c.showPage()
