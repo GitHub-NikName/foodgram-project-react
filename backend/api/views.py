@@ -118,17 +118,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_queryset(self):
+        user = self.request.user
         if self.action == 'download_shopping_cart':
             return IngredientInRecipe.objects.filter(
-                recipe__shoppingcart__user=self.request.user
+                recipe__shoppingcart__user=user
             )
         if self.action == 'shopping_cart':
-            return ShoppingCart.objects.filter(user=self.request.user)
+            return ShoppingCart.objects.filter(user=user)
         if self.action == 'favorite':
-            return FavoriteRecipe.objects.filter(user=self.request.user)
+            return FavoriteRecipe.objects.filter(user=user)
 
         filter_user_recipe = {
-            'user': self.request.user.id,
+            'user': user.id,
             'recipe': OuterRef("pk")
         }
 
@@ -136,7 +137,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'author',
             queryset=User.objects.annotate(is_subscribed=Exists(Subquery(
                 Subscriptions.objects.filter(
-                    user=self.request.user.id, author=OuterRef("pk")
+                    user=user.id, author=OuterRef("pk")
                 )
             )))
         )

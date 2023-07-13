@@ -80,7 +80,10 @@ def create_pdf(recipes: QuerySet, ingredients: QuerySet, **kwargs) -> BytesIO:
 
     # footer
     c.line(0, y, 8.5 * inch, y)
-    footer_text = 'https://' + host or 'Foodgram'
+    if host:
+        footer_text = 'https://' + host
+    else:
+        footer_text = 'Foodgram'
     c.drawRightString(8.5 * inch - 50, y - 20, footer_text)
 
     c.showPage()
